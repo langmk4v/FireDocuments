@@ -33,8 +33,8 @@ TODO が書いてある箇所は、書いてる途中であることを意味し
 >           - [assign: 代入](#代入)
 >       - [4. 文](#4-文)
 >           - [条件文](#条件文)
->               - [if]()
->               - [match]()
+>               - [if](#if)
+>               - [match](#match)
 >               - [switch]()
 >           - [繰り返し文]()
 >               - [for]()
@@ -330,35 +330,55 @@ TODO...
 
 ### 条件文
 #### **if**
-```
-if ::=
-    "if" <cond: expr>
-    <then-code: scope>
-    ("else" (<if> | <scope>))?
-```
+> Syntax;
+>
+> &emsp; **`if`** **:=** `KWD_IF` `<cond: expr>` `<then: scope>`
+> &emsp; &emsp; &emsp; &emsp; `(KWD_ELSE` `(<if>` `|` `<scope>)?`
 
 ### 繰り返し文
 #### **loop**
-```
-```
+> Syntax;
+>
+>
+>
+
 #### **for**
-```
-```
+> Syntax;
+>
+>
+>
+
 #### **foreach**
-```
-```
+> Syntax;
+>
+>
+>
+
 #### **while**
-```
-```
+> Syntax;
+>
+>
+>
+
 #### **do-while**
-```
-```
+> Syntax;
+>
+>
+>
 
 ### 単文
 
 #### **return**
+> Syntax;
+> &emsp; **return** **:=** 
+
 #### **break**
+> Syntax;
+>
+
 #### **continue**
+> Syntax;
+>
 
 ### 変数定義 (`var`)
 現在のスコープに変数を定義する。

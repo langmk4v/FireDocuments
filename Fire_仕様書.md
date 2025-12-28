@@ -16,7 +16,7 @@
 >           - [factor: リテラル・識別子]()
 >           - [primary: 関数呼び出し・配列添字・メンバアクセス]()
 >           - [unary: 単項算術演算]()
->           - [terms, add_sub: 二項算術演算]()
+>           - [terms: 二項算術演算]()
 >           - [shift: シフト演算]()
 >           - [compare: 比較]()
 >           - [equality: 等価比較]()
@@ -69,6 +69,8 @@
 
 
 
+------------
+
 # A. 字句解析
 
 ## 1. 数値リテラル
@@ -87,27 +89,93 @@ IDENTIFIER  :=  (_|[a-z]|[A-Z])([a-z]|[A-Z]|[0-9])*
 ```
 ## 4. 演算子
 ```
-ASSIGN           :=  =
-ADD_ASSIGN       :=  +=
+SCOPE_RESOL     ::
 
-TODO
+ADD             +
+SUB             -
+MUL             *
+DIV             /
+MOD             %
+
+LSHIFT          <<
+RSHIFT          >>
+
+BIT_AND         &
+BIT_OR          |
+BIT_XOR         ^
+
+INCLEMENT       ++
+DECLEMENT       --
+
+ASSIGN          =
+ASSIGN_ADD      +=
+ASSIGN_SUB      -=
+ASSIGN_MUL      *=
+ASSIGN_DIV      /=
+ASSIGN_MOD      %=
+ASSIGN_AND      &=
+ASSIGN_OR       |=
+ASSIGN_XOR      ^=
+ASSIGN_LSHIFT   <<=
+ASSIGN_RSHIFT   >>=
 ```
 ## 5. 記号
 ```
-PAREN_OPEN    :=  (
+RIGHT_ARROW     ->
+DOT             .
+COMMA           ,
+COLON           :
+SEMICOLON       ;
+EXCLAMATION     !
+QUESTION        ?
 
-TODO
+HASH            #
+DOLLER          $
+BACKTICK        `
+TILDE           ~
+
+BRACKET_OPEN    (
+BRACKET_CLOSE   )
+SCOPE_OPEN      {
+SCOPE_CLOSE     }
+ANGLE_OPEN      <
+ANGLE_CLOSE     >
+ARRAY_OPEN      [
+ARRAY_CLOSE     ]
 ```
+
+------------
 
 # B. 構文解析
 
 ## 1. 式
 ### 演算子の優先順位
-```
-```
-### factor
+
+優先度 1
+| 演算子 | 名称               | 結合 |
+|--------|--------------------|------|
+| `::`   | スコープ解決演算子 | 左   |
+
+優先度 1
+| 演算子 | 名称               | 結合 |
+|--------|--------------------|------|
+| `()`   | 関数呼び出し       | 左   |
+| `[]`   | 配列インデックス   | 左   |
+
+
+
+
+### 終端
 - リテラル
 - 識別子
+
+### プライマリ
+### 単項算術
+### 二項算術
+### シフト演算
+### 比較
+### 等価比較
+### ビット演算
 
 ## 2. 文
 
@@ -162,32 +230,30 @@ catch-scope   ::=
 ```
 
 
-# 変数
+------------
 
+# C. 型システム
 
+TODO
 
+------------
 
+# D. 意味解析
 
+## 
 
+------------
 
+# E. 構文木の評価
 
+------------
 
+# F. コンパイル: LLVM-IR を生成
 
+------------
 
+# G. アプリケーション
 
+------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--------------------
+# H. REPL

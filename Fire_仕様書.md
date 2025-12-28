@@ -8,21 +8,22 @@ TODO が書いてある箇所は、書いてる途中であることを意味し
 
 > ------------
 > **目次**
->   - [A. 字句解析 (Lexer)](#a-字句解析)
+>   - [**A. 字句解析 (Lexer)**](#a-字句解析)
 >       - [1. 数値リテラル](#1-数値リテラル)
 >       - [2. 文字・文字列リテラル](#2-文字文字列リテラル)
 >       - [3. 名前 (識別子)](#3-識別子)
 >       - [4. キーワード (予約語)](#4-キーワード)
 >       - [5. 演算子](#5-演算子)
 >       - [6. 記号](#6-記号)
->   - [B. 構文解析 (Parser)](#b-構文解析-parser)
+>   - [**B. 構文解析 (Parser)**](#b-構文解析-parser)
 >       - [1. シンボル](#1-シンボル-symbol)
 >       - [2. 型名](#2-型名-type-name)
 >           - [型名を使用可能な場所](#型を記述できる箇所の一覧:)
 >           - [式中での型名の使用](#式中に型名が含まれる場合)
 >       - [3. 式](#3-式)
 >           - [演算子の優先順位](#演算子の優先順位)
->           - [primary: 関数呼び出し・配列添字・メンバアクセス](#プライマリ)
+>           - [factor: ファクタ](#factor)
+>           - [primary: プライマリ](#プライマリ)
 >           - [unary: 単項算術演算](#単項算術)
 >           - [terms: 二項算術演算](#二項算術)
 >           - [shift: シフト演算](#シフト演算)
@@ -62,25 +63,25 @@ TODO が書いてある箇所は、書いてる途中であることを意味し
 >           - [抽象クラス]()
 >           - [テンプレート]()
 >       - [8. 名前空間]()
->   - [C. 型システム (TypeInfo)]()
+>   - [**C. 型システム (TypeInfo)**]()
 >       - [1. ]()
->   - [D. 意味解析 (Sema)]()
+>   - [**D. 意味解析 (Sema)**]()
 >       - [1. スコープ構築](#1-スコープ情報の構築)
 >       - [2. シンボル収集]()
 >       - [3. 名前解決]()
 >       - [4. 整合性・型チェック]()
->   - [E. 構文木の評価 (EvalNode)]()
+>   - [**E. 構文木の評価 (EvalNode)**]()
 >       - [1. スタック]()
 >       - [2. 式の評価]()
 >       - [3. 文の実行]()
->   - [F. コンパイル (LLVM-IR)]()
+>   - [**F. コンパイル (LLVM-IR)**]()
 >       - Feature...
->   - [G. アプリケーション (Driver)]()
+>   - [**G. アプリケーション (Driver)**]()
 >       - [1. ソースファイル管理]()
 >           - [ファイル読み取り]()
 >           - [外部モジュール取り込み (import)]()
 >       - [2. コマンドライン引数]()
->   - [H. コマンドライン実行 (REPL)]()
+>   - [**H. コマンドライン実行 (REPL)**]()
 > ------------
 
 # A. 字句解析
@@ -105,15 +106,46 @@ IDENTIFIER  :=  (_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])*
 
 ## 4. キーワード
 
-ここから先は多分抜け漏れがあるかも。
+Fire 言語の予約語一覧。<br>
+左側の「トークン名」は本仕様書における文法の定義に使われ、言語内で実際に使用するときは右の「キーワード」を使う。
 
+### 基本型
 | トークン名      | キーワード  |
 |-----------------|-------------|
-| `KWD_SELF`      | **self**    |
-| `KWD_TRUE`      | **true**    |
-| `KWD_FALSE`     | **false**   |
+| `KWD_NONE` | **None** |
+| `KWD_INT` | **int** |
+| `KWD_FLOAT` | **float** |
+| `KWD_BOOL` | **bool** |
+| `KWD_CHAR` | **char** |
+| `KWD_STRING` | **string** |
+
+### 組み込みクラス
+| トークン名      | キーワード  |
+|-----------------|-------------|
+| `KWD_VEC` | **Vec** |
+| `KWD_LIST` | **List** |
+| `KWD_DICT` | **Dict** |
+| `KWD_OPTION` | **Option** |
+| `KWD_FUNCTION` | **Function** |
+
+### 型修飾子
+| トークン名      | キーワード  |
+|-----------------|-------------|
 | `KWD_REF`       | **ref**     |
 | `KWD_CONST`     | **const** |
+
+### リテラル
+| トークン名      | キーワード  |
+|-----------------|-------------|
+| `KWD_TRUE`      | **true**    |
+| `KWD_FALSE`     | **false**   |
+| `KWD_NULL`      | **null**   |
+| `KWD_NULLOPT`   | **nullopt**   |
+| `KWD_SELF`      | **self**    |
+
+### ステートメント
+| トークン名      | キーワード  |
+|-----------------|-------------|
 | `KWD_VAR`       | **var** |
 | `KWD_IF`        | **if** |
 | `KWD_ELSE`      | **else** |
@@ -124,9 +156,20 @@ IDENTIFIER  :=  (_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])*
 | `KWD_WHILE`     | **while** |
 | `KWD_TRY`       | **try** |
 | `KWD_CATCH`     | **catch** |
+| `KWD_FINALLY`   | **finally** |
 | `KWD_BREAK`     | **break** |
 | `KWD_CONTINUE`  | **continue** |
 | `KWD_RETURN`    | **return** |
+
+## 関数・クラスの属性
+| トークン名      | キーワード  |
+|-----------------|-------------|
+| `KWD_VIRTUAL` | **virtual** |
+| `KWD_OVERRIDE` | **override** |
+
+### トップレベル
+| トークン名      | キーワード  |
+|-----------------|-------------|
 | `KWD_FN`        | **fn** |
 | `KWD_ENUM`      | **enum** |
 | `KWD_CLASS`     | **class** |
@@ -135,6 +178,12 @@ IDENTIFIER  :=  (_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])*
 ## 5. 演算子
 ```
 SCOPE_RESOL     ::
+
+INCLEMENT       ++
+DECLEMENT       --
+
+REF             &
+DEREF           *
 
 ADD             +
 SUB             -
@@ -145,12 +194,22 @@ MOD             %
 LSHIFT          <<
 RSHIFT          >>
 
+BIT_NOT         ~
 BIT_AND         &
 BIT_OR          |
 BIT_XOR         ^
 
-INCLEMENT       ++
-DECLEMENT       --
+LESS            <
+GREATER         >
+LESS_OR_EQ      <=
+GREATER_OR_EQ   >=
+
+EQUAL           ==
+NOT_EQUAL       !=
+
+LOG_NOT         !
+LOG_AND         &&
+LOG_OR          ||
 
 ASSIGN          =
 ASSIGN_ADD      +=
@@ -197,7 +256,7 @@ ARRAY_CLOSE     ]
 
 #### 言語としての構文の規則
 
-> **曖昧な構文の禁止**
+> **曖昧な構文の禁止** <br>
 > Fire では曖昧な構文を使用しません。
 > また、処理系においては、曖昧な構文木を作成することはできません。
 
@@ -207,23 +266,23 @@ ARRAY_CLOSE     ]
 変数や関数などの名前を参照する識別子トークン、またはスコープ解決式のこと。
 テンプレート引数リストを持つことができる。
 
-> **結合規則 = なし**
->
-> Syntax:
-> ```
-> symbol  :=  IDENT template-args? (SCOPE_RESOL symbol)?
->
-> template-args  :=
->     ANGLE_OPEN type-name (COMMA type-name)* ANGLE_CLOSE
-> ```
-> 
-> Example:
-> ```
-> abc
-> a::b
-> func<int>
-> MyClass<T>::func
-> ```
+**結合規則 = なし**
+
+Syntax:
+```
+symbol  :=  IDENT template-args? (SCOPE_RESOL symbol)?
+
+template-args  :=
+    ANGLE_OPEN type-name (COMMA type-name)* ANGLE_CLOSE
+```
+
+Example:
+```
+abc
+a::b
+func<int>
+MyClass<T>::func
+```
 
 > **大小比較式との明確な差別化**
 > テンプレート引数リスト `< ... >` をパースしている最中に、リスト内の予期せぬ位置で `"<"` もしくは `">"` が現れた場合、またはそれ以外の原因でパースに失敗した場合、引数リストのパースを行いません。
@@ -234,28 +293,27 @@ ARRAY_CLOSE     ]
 ## 2. 型名 (`type-name`)
 基本型・組み込みクラス・ユーザー定義クラス・列挙型 のいずれかの名前を指す識別子トークン、またはスコープ解決式。<br>
 テンプレート引数を指定可能。（構文はシンボルのものと同義）
-> **結合規則 = なし**
->
-> Syntax:
-> ```
-> type-name  :=  IDENT template-args? (SCOPE_RESOL type-name)? KWD_CONST? KWD_REF?
-> ```
-> Example:
-> ```
-> int
-> Vec<string> const
-> MyNamespace::MyClass
-> ```
+**結合規則 = なし**
+
+Syntax:
+```
+type-name  :=  IDENT template-args? (SCOPE_RESOL type-name)? KWD_CONST? KWD_REF?
+```
+Example:
+```
+int
+Vec<stringconst
+MyNamespace::MyClass
+```
 
 Fire 言語では、文とそれより上層の段階では、型名を記述できる場所は完全に決められている。
 そこに到達したときに限り、型名のパーサを呼び出す。
 
 ### 型を記述できる箇所の一覧:
 文またはそれより上層の構文に該当する構文に含まれる、全ての「型名を記述できる場所」を、以下に定義する。
-> - シンボルもしくは型名のテンプレート引数の中 (`name<T, ...>`)
-> - 関数の引数     (`a: T`)
-> - 関数の戻り値   (`-> T`)
-> TODO...
+- シンボルもしくは型名のテンプレート引数の中 (`name<T, ...>`)
+- 関数の引数     (`a: T`)
+- 関数の戻り値   (`-T`)
 
 ### 式中に型名が含まれる場合
 式中に型名が含まれている場合は、
@@ -380,25 +438,70 @@ Fire 言語では、文とそれより上層の段階では、型名を記述で
 | **^=**     | **ビット XOR 代入**        |
 | **\|\=**   | **ビット OR 代入**         |
 
-### 終端
+### factor
+構文木の終端となる要素。
+```
+factor  :=  KWD_TRUE | KWD_FALSE | KWD_SELF |
+            KWD_NULL | KWD_NULLOPT |
+            symbol | type-name | literal
+
+literal :=  INTEGER | FLOAT | CHAR | STIRNG
+```
 
 ### プライマリ
+```
+primary   :=
+    (factor DOT)* factor |
+    factor (ARRAY_OPEN expr ARRAY_CLOSE)* |
+    factor (BRACKET_OPEN (expr COMMA)* expr? BRACKER_CLOSE)* |
+    factor (INCLEMENT | DECLEMENT)
+```
 
 ### 単項算術
+```
+unary     :=
+    (INCLEMENT | DECLEMENT | REF | DEREF | LOG_NOT | BIT_NOT | ADD | SUB)? primary
+```
 
 ### 二項算術
+```
+term     :=  (unary (MUL | DIV | MOD))* unary
+add_sub  :=  (term (ADD | SUB))* term
+```
 
 ### シフト演算
+```
+shift   :=  (add_sub (LSHIFT | RSHIFT))* add_sub
+```
 
 ### 比較
+```
+compare  :=  (shift (LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ))* shift
+```
 
 ### 等価比較
+```
+equality  :=  (compare (EQUAL | NOT_EQUAL))* compare
+```
 
 ### ビット演算
+```
+bit_and   :=  (equality BIT_AND)* equality
+bit_xor   :=  (bit_and BIT_XOR)* bit_and
+bit_or    :=  (bit_xor BIT_OR)* bit_xor
+```
 
 ### 論理積・論理和
+```
+log_and   :=  (bit_xor LOG_AND)* bit_xor
+log_or    :=  (log_and LOG_OR)* log_and
+```
 
 ### 代入
+```
+assign      :=  log_or (ASSIGN asign)*
+add_assign  :=
+```
 
 --------------
 
@@ -406,79 +509,51 @@ Fire 言語では、文とそれより上層の段階では、型名を記述で
 
 ### 条件文
 #### **if**
-> Syntax;
->
-> &emsp; **`if`** **:=** `KWD_IF` `<cond: expr>` `<then: scope>`
-> &emsp; &emsp; &emsp; &emsp; `(KWD_ELSE` `(<if>` `|` `<scope>)?`
+```
+if   :=  KWD_IF <cond: expr> <then: scope>
+       (KWD_ELSE (<if> | <scope>)?
+```
 
 #### **match**
-> Syntax;
->
->
->
 
 #### **switch**
-> Syntax;
->
->
->
 
 ### 繰り返し文
 #### **loop**
-> Syntax;
->
->
->
 
 #### **for**
-> Syntax;
->
->
->
 
 #### **foreach**
-> Syntax;
->
->
->
 
 #### **while**
-> Syntax;
->
->
->
 
 #### **do-while**
-> Syntax;
->
->
->
 
 ### 単文
 
 #### **return**
-> Syntax;
-> &emsp; **return** **:=** 
+```
+```
 
 #### **break**
-> Syntax;
->
+```
+```
 
 #### **continue**
-> Syntax;
->
+```
+```
 
 ### 変数定義 (`var`)
 現在のスコープに変数を定義する。
 すでに定義済みの場合は、シャドウイングをする。
-> Syntax:
->   `var` `:=` `"var"` `IDENT` `(` `COLON` [`type-name`]() `)?` (ASSIGN expr
->
-> Example:
-> ```
-> var a = 10;
-> 
-> ```
+Syntax:
+```
+```
+
+Example:
+```
+var a = 10;
+```
 
 ### 例外処理 (`try` `catch`)
 ```
@@ -491,7 +566,7 @@ try-scope   ::=
     "try" <scope>
 
 catch-scope   ::=
-    "catch" 
+    "catch" IDENT COLON <type-name> <scope>
 ```
 
 --------------

@@ -269,7 +269,7 @@ ARRAY_CLOSE     ]
 **結合規則 = なし**
 
 Syntax:
-```
+```EBNF
 symbol  :=  IDENT template-args? (SCOPE_RESOL symbol)?
 
 template-args  :=
@@ -296,7 +296,7 @@ MyClass<T>::func
 **結合規則 = なし**
 
 Syntax:
-```
+```EBNF
 type-name  :=  IDENT template-args? (SCOPE_RESOL type-name)? KWD_CONST? KWD_REF?
 ```
 Example:
@@ -440,7 +440,7 @@ Fire 言語では、文とそれより上層の段階では、型名を記述で
 
 ### factor
 構文木の終端となる要素。
-```
+```EBNF
 factor  :=  KWD_TRUE | KWD_FALSE | KWD_SELF |
             KWD_NULL | KWD_NULLOPT |
             symbol | type-name | literal
@@ -449,7 +449,7 @@ literal :=  INTEGER | FLOAT | CHAR | STIRNG
 ```
 
 ### プライマリ
-```
+```EBNF
 primary   :=
     (factor DOT)* factor |
     factor (ARRAY_OPEN expr ARRAY_CLOSE)* |
@@ -458,47 +458,47 @@ primary   :=
 ```
 
 ### 単項算術
-```
+```EBNF
 unary     :=
     (INCLEMENT | DECLEMENT | REF | DEREF | LOG_NOT | BIT_NOT | ADD | SUB)? primary
 ```
 
 ### 二項算術
-```
+```EBNF
 term     :=  (unary (MUL | DIV | MOD))* unary
 add_sub  :=  (term (ADD | SUB))* term
 ```
 
 ### シフト演算
-```
+```EBNF
 shift   :=  (add_sub (LSHIFT | RSHIFT))* add_sub
 ```
 
 ### 比較
-```
+```EBNF
 compare  :=  (shift (LESS | GREATER | LESS_OR_EQ | GREATER_OR_EQ))* shift
 ```
 
 ### 等価比較
-```
+```EBNF
 equality  :=  (compare (EQUAL | NOT_EQUAL))* compare
 ```
 
 ### ビット演算
-```
+```EBNF
 bit_and   :=  (equality BIT_AND)* equality
 bit_xor   :=  (bit_and BIT_XOR)* bit_and
 bit_or    :=  (bit_xor BIT_OR)* bit_xor
 ```
 
 ### 論理積・論理和
-```
+```EBNF
 log_and   :=  (bit_xor LOG_AND)* bit_xor
 log_or    :=  (log_and LOG_OR)* log_and
 ```
 
 ### 代入
-```
+```EBNF
 assign      :=  log_or (ASSIGN asign)*
 add_assign  :=
 ```
@@ -509,25 +509,35 @@ add_assign  :=
 
 ### 条件文
 #### **if**
-```
+```EBNF
 if   :=  KWD_IF <cond: expr> <then: scope>
        (KWD_ELSE (<if> | <scope>)?
 ```
 
 #### **match**
-
-#### **switch**
+```
+```
 
 ### 繰り返し文
 #### **loop**
+```
+```
 
 #### **for**
+```
+```
 
 #### **foreach**
+```
+```
 
 #### **while**
+```
+```
 
 #### **do-while**
+```
+```
 
 ### 単文
 
@@ -551,12 +561,12 @@ Syntax:
 ```
 
 Example:
-```
+```EBNF
 var a = 10;
 ```
 
 ### 例外処理 (`try` `catch`)
-```
+```EBNF
 try-catch   ::=
     <try-scope>
     <catch-scope> +

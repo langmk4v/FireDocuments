@@ -36,20 +36,19 @@ TODO が書いてある箇所は、書いてる途中であることを意味し
 >           - [条件文](#条件文)
 >               - [if](#if)
 >               - [match](#match)
->               - [switch]()
->           - [繰り返し文]()
->               - [for]()
->               - [loop]()
->               - [do-while]()
->               - [while]()
->           - [単文]()
->               - [return]()
->               - [break]()
->               - [continue]()
->           - [変数定義 (var)]()
->           - [例外処理 (try-catch)]() 
->           - [式文]()
->           - [スコープ]()
+>           - [繰り返し文](#繰り返し文)
+>               - [for](#for)
+>               - [loop](#loop)
+>               - [do-while](#do-while)
+>               - [while](#while)
+>           - [単文](#単文)
+>               - [return](#return)
+>               - [break](#break)
+>               - [continue](#continue)
+>               - [式文](#式文)
+>           - [スコープ](#スコープ)
+>           - [変数定義 (var)](#変数定義-var)
+>           - [例外処理 (try-catch)](#例外処理-try-catchs)
 >       - [5. 関数]()
 >           - [定義]()
 >           - [テンプレート]()
@@ -152,6 +151,7 @@ Fire 言語の予約語一覧。<br>
 | `KWD_MATCH`     | **match** |
 | `KWD_LOOP`      | **loop** |
 | `KWD_FOR`       | **for** |
+| `KWD_IN`        | **in** |
 | `KWD_DO`        | **do** |
 | `KWD_WHILE`     | **while** |
 | `KWD_TRY`       | **try** |
@@ -225,7 +225,13 @@ ASSIGN_RSHIFT   >>=
 ```
 ## 6. 記号
 ```
+ELLIPSIS        ...
+
 RIGHT_ARROW     ->
+LAMBDA_BODY     =>
+
+MATCH_CASE      LAMBDA_BODY
+
 DOT             .
 COMMA           ,
 COLON           :
@@ -254,21 +260,18 @@ ARRAY_CLOSE     ]
 
 # B. 構文解析 (Parser)
 
-#### 言語としての構文の規則
+#### 構文の規約一覧
 
-> **曖昧な構文の禁止** <br>
-> Fire では曖昧な構文を使用しません。
-> また、処理系においては、曖昧な構文木を作成することはできません。
+- **曖昧な構文の禁止**: Fire では曖昧な構文もしくはそれに準ずる機能を一切使用しません。<br>
 
 --------------
 
 ## 1. シンボル (`symbol`)
-変数や関数などの名前を参照する識別子トークン、またはスコープ解決式のこと。
-テンプレート引数リストを持つことができる。
+変数や関数などの名前を参照する識別子トークン、またはスコープ解決式のこと。<br>
+テンプレート引数リストを持つことができる。<br>
 
-**結合規則 = なし**
 
-Syntax:
+Syntax: (結合規則なし)<br>
 ```EBNF
 symbol  :=  IDENT template-args? (SCOPE_RESOL symbol)?
 
@@ -284,9 +287,9 @@ func<int>
 MyClass<T>::func
 ```
 
-> **大小比較式との明確な差別化**
-> テンプレート引数リスト `< ... >` をパースしている最中に、リスト内の予期せぬ位置で `"<"` もしくは `">"` が現れた場合、またはそれ以外の原因でパースに失敗した場合、引数リストのパースを行いません。
-> 引数リストのパースを中断して、パース直前のトークン位置に戻します。
+- **大小比較式との混合回避**
+テンプレート引数リスト `< ... >` をパースしている最中に、リスト内の予期せぬ位置で `"<"` もしくは `">"` が現れた場合、またはそれ以外の原因でパースに失敗した場合、引数リストのパースを行いません。
+引数リストのパースを中断して、パース直前のトークン位置に戻します。
 
 --------------
 
@@ -302,7 +305,7 @@ type-name  :=  IDENT template-args? (SCOPE_RESOL type-name)? KWD_CONST? KWD_REF?
 Example:
 ```
 int
-Vec<stringconst
+Vec<string> const
 MyNamespace::MyClass
 ```
 
@@ -499,89 +502,145 @@ log_or    :=  (log_and LOG_OR)* log_and
 
 ### 代入
 ```EBNF
-assign      :=  log_or (ASSIGN asign)*
-add_assign  :=
+assign      :=
+    log_or ((ASSIGN | ASSIGN_ADD | ASSIGN_SUB | ASSIGN_MUL | ASSIGN_DIV |
+        ASSIGN_MOD | ASSIGN_AND | ASSIGN_OR | ASSIGN_XOR |
+        ASSIGN_LSHIFT | ASSIGN_RSHIFT) asign)*
 ```
 
 --------------
 
 ## 4. 文
+```
+stmt    :=  if | match |
+            loop | for | while | do-while |
+            return | break | continue | expr-stmt |
+            scope | var
+```
 
 ### 条件文
 #### **if**
 ```EBNF
 if   :=  KWD_IF <cond: expr> <then: scope>
-       (KWD_ELSE (<if> | <scope>)?
+       (KWD_ELSE (<if> | <scope>))?
 ```
 
 #### **match**
-```
+```BNF
+match   :=  KWD_MATCH <expr> SCOPE_OPEN
+                (<expr> MATCH_CASE <scope> COMMA)*
+                <expr> MATCH_CASE <scope>
+            SCOPE_CLOSE
 ```
 
 ### 繰り返し文
 #### **loop**
 ```
+loop    :=  KWD_LOOP <scope>
 ```
 
 #### **for**
 ```
-```
-
-#### **foreach**
-```
+for     :=  KWD_FOR (start: <expr> | <var>)? IDENT KWD_IN <content: expr> <scope>
 ```
 
 #### **while**
 ```
+while   :=  KWD_WHILE <cond: expr> <scope>
 ```
 
 #### **do-while**
 ```
+do-while    :=  KWD_DO <scope> KWD_WHILE <cond: expr> SEMICOLON
 ```
 
 ### 単文
 
 #### **return**
 ```
+return  :=  KWD_RETURN <expr>? SEMICOLON
 ```
 
 #### **break**
 ```
+break   :=  KWD_BREAK SEMICOLON
 ```
 
 #### **continue**
 ```
+continue    :=  KWD_CONTINUE SEMICOLON
+```
+
+#### **式文**
+```
+expr-stmt   :=  <expr> SEMICOLON
+```
+
+### スコープ
+```
+scope   :=  SCOPE_OPEN <stmt>* SCOPE_CLOSE
 ```
 
 ### 変数定義 (`var`)
-現在のスコープに変数を定義する。
-すでに定義済みの場合は、シャドウイングをする。
+現在のスコープに変数を定義する。すでに定義済みの場合は、シャドウイングをする。<br>
+型名と初期化式を両方省略することは不可能。<br>
 Syntax:
 ```
+var     :=  KWD_VAR IDENT (COLON <type-name>)? (ASSIGN <expr>)? SEMICOLON
 ```
 
 Example:
 ```EBNF
 var a = 10;
+var b : int;
+var c : string = "aiueo";
 ```
 
-### 例外処理 (`try` `catch`)
+### 例外処理 (`try-catch`)
+Fire では例外処理を使うことができます。<br>
+`catch` 文では、全ての例外を受け取りたいときは C++ と同様に省略記号 `...` を使用できます。<br>
+Syntax:
 ```EBNF
-try-catch   ::=
+try-catch   :=
     <try-scope>
-    <catch-scope> +
+    <catch-scope>+
     <finally-scope>
 
-try-scope   ::=
-    "try" <scope>
+try-scope   :=
+    KWD_TRY <scope>
 
-catch-scope   ::=
-    "catch" IDENT COLON <type-name> <scope>
+catch-scope   :=
+    KWD_CATCH (IDENT COLON <type-name> | ELLIPSIS) <scope>
+
+finally-scope   :=
+    KWD_FINALLY <scope>
+```
+Example:
+```
+try {
+    println(input().split(' ')[3]);
+}
+catch e: IndexOutOfRange {
+    ...
+}
 ```
 
 --------------
 
 ## 5. 関数
+
+### 定義
+Syntax:
+```EBNF
+func    :=
+    KWD_FN <func-args> (KWD_RIGHT_ARROW <type-name>)? <body: scope>
+
+func-args   :=
+    BRACKET_OPEN (IDENT COLON <type-name> COMMA)* (IDENT COLON <type-name>)? BRACKET_CLOSE
+```
+
+### テンプレート
+
 
 ------------
 
@@ -613,6 +672,7 @@ TODO
 構文木を探索して処理することは全てのフェーズに共通する。
 
 ## 1. スコープ情報の構築
+
 Node を探索し、スコープを持つ Node を元に スコープ情報 (=SI) を構築する。
 すべての S は、シンボルテーブル(=SymTBL) を保持する。
 また、その S に名前がある場合、S の中にシンボル情報(=SYM) をもたせる。
